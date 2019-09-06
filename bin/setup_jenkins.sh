@@ -39,3 +39,15 @@ while : ; do
   echo "...no. Sleeping 10 seconds."
   sleep 10
 done
+
+# Make sure that Jenkins Agent Build Pod has finished building
+while : ; do
+  echo "Checking if Jenkins Agent Build Pod has finished building..."
+  AVAILABLE_REPLICAS=$(oc get pod jenkins-agent-appdev-1-build -n ${GUID}-jenkins -o=jsonpath='{.status.phase}')
+  if [[ "$AVAILABLE_REPLICAS" == "Succeeded" ]]; then
+    echo "...Yes. Jenkins Agent Build Pod has finished."
+    break
+  fi
+  echo "...no. Sleeping 10 seconds."
+  sleep 10
+done
