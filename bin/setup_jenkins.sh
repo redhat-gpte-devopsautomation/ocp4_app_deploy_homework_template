@@ -1,21 +1,26 @@
 #!/bin/bash
 # Setup Jenkins Project
-if [ "$#" -ne 3 ]; then
+if [ "$#" -ne 5 ]; then
     echo "Usage:"
-    echo "  $0 GUID REPO CLUSTER"
-    echo "  Example: $0 wkha https://github.com/redhat-gpte-devopsautomation/advdev_homework_template.git na311.openshift.opentlc.com"
+    echo "  $0 GUID REPO CLUSTER USER PASSWORD"
+    echo "  Example: $0 wkha https://github.com/redhat-gpte-devopsautomation/advdev_homework_template.git shared.na.openshift.opentlc.com wkulhane-redhat.com secret-password"
     exit 1
 fi
 
 GUID=$1
 REPO=$2
 CLUSTER=$3
-echo "Setting up Jenkins in project ${GUID}-jenkins from Git Repo ${REPO} for Cluster ${CLUSTER}"
+USER=$4
+PASSWORD=$5
+echo "Setting up Jenkins in project ${GUID}-jenkins from Git Repo ${REPO} and user ${USER} for Cluster ${CLUSTER}"
 
 # Set up Jenkins with sufficient resources
 # TBD
 
 # Create custom agent container image with skopeo
+# TBD
+
+# Create Secret with credentials to access the private repository
 # TBD
 
 # Create pipeline build config pointing to the ${REPO} with contextDir `openshift-tasks`
