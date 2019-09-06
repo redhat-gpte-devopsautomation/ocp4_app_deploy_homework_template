@@ -1,18 +1,16 @@
 #!/bin/bash
 # Setup Jenkins Project
-if [ "$#" -ne 5 ]; then
+if [ "$#" -ne 3 ]; then
     echo "Usage:"
-    echo "  $0 GUID REPO CLUSTER USER PASSWORD"
-    echo "  Example: $0 wkha https://github.com/redhat-gpte-devopsautomation/advdev_homework_template.git shared.na.openshift.opentlc.com wkulhane-redhat.com secret-password"
+    echo "  $0 GUID REPO CLUSTER"
+    echo "  Example: $0 wkha https://github.com/redhat-gpte-devopsautomation/advdev_homework_template.git shared.na.openshift.opentlc.com"
     exit 1
 fi
 
 GUID=$1
 REPO=$2
 CLUSTER=$3
-USER=$4
-PASSWORD=$5
-echo "Setting up Jenkins in project ${GUID}-jenkins from Git Repo ${REPO} and user ${USER} for Cluster ${CLUSTER}"
+echo "Setting up Jenkins in project ${GUID}-jenkins from Git Repo ${REPO} for Cluster ${CLUSTER}"
 
 # Set up Jenkins with sufficient resources
 # TBD
@@ -21,9 +19,13 @@ echo "Setting up Jenkins in project ${GUID}-jenkins from Git Repo ${REPO} and us
 # TBD
 
 # Create Secret with credentials to access the private repository
+# You can hardcode your user id and password here because
+# this shell scripts lives in a private repository
+# Passing it from Jenkins would show it in the Jenkins Log
 # TBD
 
 # Create pipeline build config pointing to the ${REPO} with contextDir `openshift-tasks`
+# Make sure you use your secret to access the repository
 # TBD
 
 # Make sure that Jenkins is fully up and running before proceeding!
