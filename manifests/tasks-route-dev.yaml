@@ -1,0 +1,15 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: tasks
+  name: tasks
+spec:
+  port:
+    targetPort: 8080
+  subdomain: ""
+  to:
+    kind: Service
+    name: tasks
+    weight: 100
+  wildcardPolicy: None

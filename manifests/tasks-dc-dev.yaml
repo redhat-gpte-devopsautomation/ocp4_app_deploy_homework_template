@@ -1,0 +1,73 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    app: tasks
+  name: tasks
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    app: tasks
+    deploymentconfig: tasks
+  strategy:
+    activeDeadlineSeconds: 21600
+    rollingParams:
+      intervalSeconds: 1
+      maxSurge: 25%
+      maxUnavailable: 25%
+      timeoutSeconds: 600
+      updatePeriodSeconds: 1
+    type: Rolling
+  template:
+    metadata:
+      labels:
+        app: tasks
+        deploymentconfig: tasks
+    spec:
+      containers:
+      - env:
+        - name: VERSION
+          value: 0.0 (tasks-dev)
+        image: image-registry.openshift-image-registry.svc:5000/wk-tasks-dev/tasks:0.0-0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: tasks
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources: {}
+        volumeMounts:
+        - mountPath: /opt/eap/standalone/configuration/application-users.properties
+          name: jboss-config
+          subPath: application-users.properties
+        - mountPath: /opt/eap/standalone/configuration/application-roles.properties
+          name: jboss-config1
+          subPath: application-roles.properties
+      restartPolicy: Always
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: tasks-config
+        name: jboss-config
+      - configMap:
+          defaultMode: 420
+          name: tasks-config
+        name: jboss-config1
+  triggers: []

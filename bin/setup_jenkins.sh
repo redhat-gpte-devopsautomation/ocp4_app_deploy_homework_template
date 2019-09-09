@@ -16,8 +16,9 @@ echo "Setting up Jenkins in project ${GUID}-jenkins from Git Repo ${REPO} for Cl
 # TBD
 
 # Create custom agent container image with skopeo.
-# Build config has to be called 'jenkins-agent-appdev' for the test below to succeed
+# Build config must be called 'jenkins-agent-appdev' for the test below to succeed
 # TBD
+
 
 # Create Secret with credentials to access the private repository
 # You can hardcode your user id and password here because
@@ -25,11 +26,15 @@ echo "Setting up Jenkins in project ${GUID}-jenkins from Git Repo ${REPO} for Cl
 # Passing it from Jenkins would show it in the Jenkins Log
 # TBD
 
+
 # Create pipeline build config pointing to the ${REPO} with contextDir `openshift-tasks`
 # Build config has to be called 'tasks-pipeline'.
 # Make sure you use your secret to access the repository
 # TBD
 
+
+
+# No changes are necessary below this line
 # Make sure that Jenkins is fully up and running before proceeding!
 while : ; do
   echo "Checking if Jenkins is Ready..."

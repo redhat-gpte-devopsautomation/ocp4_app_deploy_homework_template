@@ -1,0 +1,13 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: tasks
+spec:
+  port:
+    targetPort: 8080
+  subdomain: ""
+  to:
+    kind: Service
+    name: tasks-blue
+    weight: 100
+  wildcardPolicy: None

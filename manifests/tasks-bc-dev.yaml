@@ -1,0 +1,25 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  labels:
+    build: tasks
+  name: tasks
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: tasks:latest
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    binary: {}
+    type: Binary
+  strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: jboss-eap71-openshift:1.4
+        namespace: openshift
+    type: Source
+  successfulBuildsHistoryLimit: 5

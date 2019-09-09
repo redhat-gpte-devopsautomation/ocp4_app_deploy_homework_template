@@ -1,0 +1,18 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  labels:
+    build: tasks
+  name: tasks
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+  - annotations: null
+    from:
+      kind: DockerImage
+      name: image-registry.openshift-image-registry.svc:5000/wk-tasks-dev/tasks:0.0-0
+    importPolicy: {}
+    name: 0.0-0
+    referencePolicy:
+      type: Source
