@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: tasks-config-green
+  name: tasks-green-config
 data:
   application-roles.properties: |
     #

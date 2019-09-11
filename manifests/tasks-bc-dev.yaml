@@ -8,7 +8,7 @@ spec:
   output:
     to:
       kind: ImageStreamTag
-      name: tasks:latest
+      name: GUID-tasks:latest
   postCommit: {}
   resources: {}
   runPolicy: Serial

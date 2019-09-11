@@ -6,7 +6,7 @@ podTemplate(
   containers: [
     containerTemplate(
       name: "jnlp",
-      image: "docker-registry.default.svc:5000/${GUID}-jenkins/jenkins-agent-appdev",
+      image: "image-registry.openshift-image-registry.svc:5000/${GUID}-jenkins/jenkins-agent-appdev",
       resourceRequestMemory: "1Gi",
       resourceLimitMemory: "2Gi",
       resourceRequestCpu: "1",
@@ -17,18 +17,23 @@ podTemplate(
   node('skopeo-pod') {
     // Define Maven Command to point to the correct
     // settings for our Nexus installation
-    def mvnCmd = "mvn -s ../nexus_settings.xml"
+    def mvnCmd = "mvn -s ./nexus_settings.xml"
+
+    // Define global variables
+    def imageName = "${GUID}-tasks"
+    def devProject = "${GUID}-tasks-dev"
+    def prodProject = "${GUID}-tasks-prod"
 
     // Checkout Source Code.
     stage('Checkout Source') {
       checkout scm
+
+      // Patch Source artifactId to include GUID
+      sh "sed -i 's/GUID/${GUID}/g' openshift-tasks/pom.xml"
     }
 
-    // Build the Tasks Service
+    // Build the Tasks Application in the directory 'openshift-tasks'
     dir('openshift-tasks') {
-      // The following variables need to be defined at the top level
-      // and not inside the scope of a stage - otherwise they would not
-      // be accessible from other stages.
       // Extract version from the pom.xml
       def version = getVersionFromPom("pom.xml")
 
@@ -43,15 +48,15 @@ podTemplate(
         echo "Building version ${devTag}"
 
         // TBD: Execute Maven Build
-      }
 
-      // TBD: The next two stages should run in parallel
+      }
 
       // Using Maven run the unit tests
       stage('Unit Tests') {
         echo "Running Unit Tests"
 
         // TBD: Execute Unit Tests
+
       }
 
       // Using Maven to call SonarQube for Code Analysis
@@ -59,6 +64,8 @@ podTemplate(
         echo "Running Code Analysis"
 
         // TBD: Execute Sonarqube Tests
+        //      Your project name should be "${GUID}-${JOB_BASE_NAME}-${devTag}"
+
       }
 
       // Publish the built war file to Nexus
@@ -66,13 +73,16 @@ podTemplate(
         echo "Publish to Nexus"
 
         // TBD: Publish to Nexus
+
       }
 
       // Build the OpenShift Image in OpenShift and tag it.
       stage('Build and Tag OpenShift Image') {
-        echo "Building OpenShift container image tasks:${devTag}"
+        echo "Building OpenShift container image ${imageName}:${devTag}"
 
         // TBD: Build Image, tag Image
+        //      Make sure the image name is correct!
+
       }
 
       // Deploy the built image to the Development Environment.
@@ -81,7 +91,9 @@ podTemplate(
 
         // TBD: Deploy to development Project
         //      Set Image, Set VERSION
+        //      (Re-) Create ConfigMap
         //      Make sure the application is running and ready before proceeding
+
       }
 
       // Copy Image to Nexus container registry
@@ -91,6 +103,7 @@ podTemplate(
         // TBD: Copy image to Nexus container registry
 
         // TBD: Tag the built image with the production tag.
+
       }
 
       // Blue/Green Deployment into Production
@@ -101,13 +114,16 @@ podTemplate(
       stage('Blue/Green Production Deployment') {
         // TBD: Determine which application is active
         //      Set Image, Set VERSION
+        //      (Re-)create ConfigMap
         //      Deploy into the other application
         //      Make sure the application is running and ready before proceeding
+
       }
 
       stage('Switch over to new Version') {
         echo "Switching Production application to ${destApp}."
         // TBD: Execute switch
+
       }
     }
   }

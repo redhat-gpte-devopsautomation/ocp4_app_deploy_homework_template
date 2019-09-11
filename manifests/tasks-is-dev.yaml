@@ -2,17 +2,16 @@ apiVersion: image.openshift.io/v1
 kind: ImageStream
 metadata:
   labels:
-    build: tasks
-  name: tasks
+    build: GUID-tasks
+  name: GUID-tasks
 spec:
   lookupPolicy:
     local: false
   tags:
-  - annotations: null
+  - name: 0.0-0
     from:
       kind: DockerImage
-      name: image-registry.openshift-image-registry.svc:5000/wk-tasks-dev/tasks:0.0-0
+      name: image-registry.openshift-image-registry.svc:5000/GUID-tasks-dev/GUID-tasks:0.0-0
     importPolicy: {}
-    name: 0.0-0
     referencePolicy:
       type: Source

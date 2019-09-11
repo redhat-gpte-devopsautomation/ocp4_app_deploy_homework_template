@@ -29,7 +29,7 @@ spec:
       - env:
         - name: VERSION
           value: 0.0 (tasks-dev)
-        image: image-registry.openshift-image-registry.svc:5000/wk-tasks-dev/tasks:0.0-0
+        image: image-registry.openshift-image-registry.svc:5000/GUID-tasks-dev/GUID-tasks:0.0-0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -52,7 +52,13 @@ spec:
           periodSeconds: 10
           successThreshold: 1
           timeoutSeconds: 1
-        resources: {}
+        resources:
+          requests:
+            cpu: 2
+            memory: 1.5Gi
+          limits:
+            cpu: 2
+            memory: 1.5Gi
         volumeMounts:
         - mountPath: /opt/eap/standalone/configuration/application-users.properties
           name: jboss-config

@@ -8,6 +8,6 @@ spec:
   subdomain: ""
   to:
     kind: Service
-    name: tasks-blue
+    name: tasks-green
     weight: 100
   wildcardPolicy: None
