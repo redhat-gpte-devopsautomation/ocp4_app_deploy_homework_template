@@ -123,6 +123,8 @@ podTemplate(
       stage('Switch over to new Version') {
         echo "Switching Production application to ${destApp}."
         // TBD: Execute switch
+        //      Hint: sleep 5 seconds after the switch for the route to be fully
+        //            switched over
 
       }
     }
