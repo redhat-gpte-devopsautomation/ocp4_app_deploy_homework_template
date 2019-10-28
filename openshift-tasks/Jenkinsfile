@@ -1,140 +1,189 @@
-#!groovy
-podTemplate(
-  label: "skopeo-pod",
-  cloud: "openshift",
-  inheritFrom: "maven",
-  containers: [
-    containerTemplate(
-      name: "jnlp",
-      image: "image-registry.openshift-image-registry.svc:5000/${GUID}-jenkins/jenkins-agent-appdev",
-      resourceRequestMemory: "1Gi",
-      resourceLimitMemory: "2Gi",
-      resourceRequestCpu: "1",
-      resourceLimitCpu: "2"
-    )
-  ]
-) {
-  node('skopeo-pod') {
-    // Define Maven Command to point to the correct
-    // settings for our Nexus installation
-    def mvnCmd = "mvn -s ./nexus_settings.xml"
+// This is a Declarative Jenkinsfile to be used in the homework
+// It should map very well to what you learned in class.
+// Implement the sections marked with "TBD:"
 
-    // Define global variables
-    def imageName = "${GUID}-tasks"
-    def devProject = "${GUID}-tasks-dev"
-    def prodProject = "${GUID}-tasks-prod"
-
-    // Checkout Source Code.
-    stage('Checkout Source') {
-      checkout scm
-
-      // Patch Source artifactId to include GUID
-      sh "sed -i 's/GUID/${GUID}/g' openshift-tasks/pom.xml"
-    }
-
-    // Build the Tasks Application in the directory 'openshift-tasks'
-    dir('openshift-tasks') {
-      // Extract version from the pom.xml
-      def version = getVersionFromPom("pom.xml")
-
-      // TBD Set the tag for the development image: version + build number
-      def devTag  = ""
-      // Set the tag for the production image: version
-      def prodTag = ""
-
-      // Using Maven build the war file
-      // Do not run tests in this step
-      stage('Build war') {
-        echo "Building version ${devTag}"
-
-        // TBD: Execute Maven Build
-
-      }
-
-      // Using Maven run the unit tests
-      stage('Unit Tests') {
-        echo "Running Unit Tests"
-
-        // TBD: Execute Unit Tests
-
-      }
-
-      // Using Maven to call SonarQube for Code Analysis
-      stage('Code Analysis') {
-        echo "Running Code Analysis"
-
-        // TBD: Execute Sonarqube Tests
-        //      Your project name should be "${GUID}-${JOB_BASE_NAME}-${devTag}"
-
-      }
-
-      // Publish the built war file to Nexus
-      stage('Publish to Nexus') {
-        echo "Publish to Nexus"
-
-        // TBD: Publish to Nexus
-
-      }
-
-      // Build the OpenShift Image in OpenShift and tag it.
-      stage('Build and Tag OpenShift Image') {
-        echo "Building OpenShift container image ${imageName}:${devTag}"
-
-        // TBD: Build Image, tag Image
-        //      Make sure the image name is correct!
-
-      }
-
-      // Deploy the built image to the Development Environment.
-      stage('Deploy to Dev') {
-        echo "Deploying container image to Development Project"
-
-        // TBD: Deploy to development Project
-        //      Set Image, Set VERSION
-        //      (Re-) Create ConfigMap
-        //      Make sure the application is running and ready before proceeding
-
-      }
-
-      // Copy Image to Nexus container registry
-      stage('Copy Image to Nexus container registry') {
-        echo "Copy image to Nexus container registry"
-
-        // TBD: Copy image to Nexus container registry
-
-        // TBD: Tag the built image with the production tag.
-
-      }
-
-      // Blue/Green Deployment into Production
-      // -------------------------------------
-      def destApp   = "tasks-green"
-      def activeApp = ""
-
-      stage('Blue/Green Production Deployment') {
-        // TBD: Determine which application is active
-        //      Set Image, Set VERSION
-        //      (Re-)create ConfigMap
-        //      Deploy into the other application
-        //      Make sure the application is running and ready before proceeding
-
-      }
-
-      stage('Switch over to new Version') {
-        echo "Switching Production application to ${destApp}."
-        // TBD: Execute switch
-        //      Hint: sleep 5 seconds after the switch for the route to be fully
-        //            switched over
-
+pipeline {
+  agent {
+    kubernetes {
+      label "maven-skopeo-agent"
+      cloud "openshift"
+      inheritFrom "maven"
+      containerTemplate {
+        name "jnlp"
+        image "image-registry.openshift-image-registry.svc:5000/${GUID}-jenkins/jenkins-agent-appdev:latest"
+        resourceRequestMemory "2Gi"
+        resourceLimitMemory "2Gi"
+        resourceRequestCpu "2"
+        resourceLimitCpu "2"
       }
     }
   }
-}
+  environment { 
+    // Define global variables
+    // Set Maven command to always include Nexus Settings
+    // NOTE: Somehow an inline pod template in a declarative pipeline
+    //       needs the "scl_enable" before calling maven.
+    mvnCmd = "source /usr/local/bin/scl_enable && mvn -s ./nexus_settings.xml"
 
-// Convenience Functions to read version from the pom.xml
-// Do not change anything below this line.
-// --------------------------------------------------------
-def getVersionFromPom(pom) {
-  def matcher = readFile(pom) =~ '<version>(.+)</version>'
-  matcher ? matcher[0][1] : null
+    // Images and Projects
+    imageName   = "${GUID}-tasks"
+    devProject  = "${GUID}-tasks-dev"
+    prodProject = "${GUID}-tasks-prod"
+
+    // Tags
+    devTag      = "0.0-0"
+    prodTag     = "0.0"
+    
+    // Blue-Green Settings
+    destApp     = "tasks-green"
+    activeApp   = ""
+  }
+  stages {
+    // Checkout Source Code.
+    stage('Checkout Source') {
+      steps {
+        checkout scm
+
+        dir('openshift-tasks') {
+          script {
+            def pom = readMavenPom file: 'pom.xml'
+            def version = pom.version
+            
+            // Set the tag for the development image: version + build number
+            devTag  = "${version}-" + currentBuild.number
+            // Set the tag for the production image: version
+            prodTag = "${version}"
+
+            // Patch Source artifactId to include GUID
+            sh "sed -i 's/GUID/${GUID}/g' ./pom.xml"
+          }
+        }
+      }
+    }
+
+    // Build the Tasks Application in the directory 'openshift-tasks'
+    stage('Build war') {
+      steps {
+        dir('openshift-tasks') {
+          echo "Building version ${devTag}"
+          script {
+
+            //TBD: Execute the Maven Build
+
+          }
+        }
+      }
+    }
+
+    // Using Maven run the unit tests
+    stage('Unit Tests') {
+      steps {
+        dir('openshift-tasks') {
+          echo "Running Unit Tests"
+
+        // TBD: Execute Unit Tests
+
+        }
+      }
+    }
+    // Using Maven call SonarQube for Code Analysis
+    stage('Code Analysis') {
+      steps {
+        dir('openshift-tasks') {
+          script {
+            echo "Running Code Analysis"
+
+            // TBD: Execute Sonarqube Tests
+            //      Your project name should be "${GUID}-${JOB_BASE_NAME}-${devTag}"
+            //      Your project version should be ${devTag}
+
+          }
+        }
+      }
+    }
+    // Publish the built war file to Nexus
+    stage('Publish to Nexus') {
+      steps {
+        dir('openshift-tasks') {
+          echo "Publish to Nexus"
+
+          // TBD: Publish to Nexus
+
+        }
+      }
+    }
+    // Build the OpenShift Image in OpenShift and tag it.
+    stage('Build and Tag OpenShift Image') {
+      steps {
+        dir('openshift-tasks') {
+          echo "Building OpenShift container image ${imageName}:${devTag} in project ${devProject}."
+
+          script {
+            // TBD: Build Image (binary build), tag Image
+            //      Make sure the image name is correct in the tag!
+
+
+          }
+        }
+      }
+    }
+    // Deploy the built image to the Development Environment.
+    stage('Deploy to Dev') {
+      steps {
+        dir('openshift-tasks') {
+          echo "Deploying container image to Development Project"
+          script {
+
+            // TBD: Deploy to development Project
+            //      Set Image, Set VERSION
+            //      (Re-) Create ConfigMap
+            //      Make sure the application is running and ready before proceeding
+
+          }
+        }
+      }
+    }
+
+    // Copy Image to Nexus Container Registry
+    stage('Copy Image to Nexus Container Registry') {
+      steps {
+        echo "Copy image to Nexus Container Registry"
+        script {
+
+          // TBD: Copy image to Nexus container registry
+
+          // TBD: Tag the built image with the production tag.
+
+        }
+      }
+    }
+
+    // Blue/Green Deployment into Production
+    // -------------------------------------
+    stage('Blue/Green Production Deployment') {
+      steps {
+        script {
+
+          // TBD: Determine which application is active
+          //      Set Image, Set VERSION
+          //      (Re-)create ConfigMap
+          //      Deploy into the other application
+          //      Make sure the application is running and ready before proceeding
+
+        }
+      }
+    }
+
+    stage('Switch over to new Version') {
+      steps{
+        echo "Switching Production application to ${destApp}."
+        script {
+          // TBD: Execute switch
+          //      Hint: sleep 5 seconds after the switch
+          //            for the route to be fully switched over
+
+        }
+      }
+    }
+  }
 }
